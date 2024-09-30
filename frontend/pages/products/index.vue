@@ -20,7 +20,7 @@
         <v-card class="pa-5">
           <div class="mb-3">
             <ProductsListMenu
-              @edit="openEditDialog(product)"
+              @edit="openEditDialog(product)" 
               @delete="openDeleteDialog(product)"
             />
           </div>
@@ -41,7 +41,7 @@
     />
   </v-container>
 </template>
-
+<!-- ้่เิ่า้เ่า้เ -->
 <script setup lang="ts">
 const products = ref([]);
 const dialog = ref(false);

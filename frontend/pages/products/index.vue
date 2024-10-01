@@ -2,7 +2,7 @@
   <v-container>
     <v-card-title class="font-weight-bold">Product</v-card-title>
     <v-btn color="primary" @click="dialog = true" class="mb-5"
-      >Create Product</v-btn
+      rounded>Create Product</v-btn
     >
 
     <ProductsCreatedialog
@@ -17,8 +17,8 @@
         sm="6"
         md="4"
       >
-        <v-card class="pa-5">
-          <div class="mb-3">
+        <v-card class="pa-5" elevation="0">
+          <div class="mb-6 justify-center">
             <ProductsListMenu
               @edit="openEditDialog(product)" 
               @delete="openDeleteDialog(product)"
@@ -85,33 +85,77 @@ const handleProductCreated = async (newProduct) => {
     console.error("Error creating product:", error);
   }
 };
-const updateProduct = async (updatedProduct) => {
-  if (!selectedProduct.value) return;
+// const updateProduct = async (updatedProduct) => {
+//   if (!updatedProduct || !updatedProduct.id) {
+//     console.error("Invalid product data for update:", updatedProduct);
+//     return; // Prevent the function from proceeding if product data is invalid
+//   }
 
-  const productId = selectedProduct.value.id;
+//   try {
+//     const response = await fetch(`http://localhost:1337/api/products/${updatedProduct.id}`, {
+//       method: "PUT",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ data: updatedProduct }),
+//     });
+
+//     const result = await response.json();
+
+//     // Check if the response is valid
+//     if (!result.data) {
+//       console.error("Update failed: No data returned from server");
+//       return;
+//     }
+
+//     // Update the product in the products array
+//     const index = products.value.findIndex(product => product.id === updatedProduct.id);
+//     if (index !== -1) {
+//       products.value[index] = result.data; // Update the product in the array
+//     } else {
+//       console.error("Product not found in local state:", updatedProduct.id);
+//     }
+
+//     console.log("Product updated successfully:", result);
+//     editDialog.value = false; // Close the edit dialog
+//   } catch (error) {
+//     console.error("Error updating product:", error);
+//   }
+// };
+
+const updateProduct = async (updatedProduct) => {
+  if (!updatedProduct || !updatedProduct.id) {
+    console.error("Invalid product data for update:", updatedProduct);
+    return; // Prevent the function from proceeding if product data is invalid
+  }
+
   try {
-    const response = await fetch(`http://localhost:1337/api/products/${productId}`, {
+    const response = await fetch(`http://localhost:1337/api/products/${updatedProduct.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ data: updatedProduct }),
+      body: JSON.stringify(updatedProduct), // Send the updatedProduct directly
     });
 
-    if (!response.ok) {
-      throw new Error(`Error: ${response.statusText}`);
-    }
-
     const result = await response.json();
-    
-    // Update the product in the products list
-    const index = products.value.findIndex((p) => p.id === productId);
-    if (index !== -1) {
-      products.value[index] = result.data;
+
+    // Check if the response is valid
+    if (!result.data) {
+      console.error("Update failed: No data returned from server");
+      return;
     }
 
-    editDialog.value = false; // Close the edit dialog
+    // Update the product in the products array
+    const index = products.value.findIndex(product => product.id === updatedProduct.id);
+    if (index !== -1) {
+      products.value[index] = result.data; // Update the product in the array
+    } else {
+      console.error("Product not found in local state:", updatedProduct.id);
+    }
+
     console.log("Product updated successfully:", result);
+    editDialog.value = false; // Close the edit dialog
   } catch (error) {
     console.error("Error updating product:", error);
   }
@@ -126,9 +170,7 @@ const openDeleteDialog = (product) => {
   deleteDialog.value = true;
 };
 
-const addNewProduct = (newProduct) => {
-  products.value.push(newProduct);
-};
+
 
 onMounted(() => {
   fetchProducts();

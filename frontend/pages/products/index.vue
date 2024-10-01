@@ -3,7 +3,7 @@
     <v-card-title class="font-weight-bold">Product</v-card-title>
     <v-btn color="primary" @click="dialog = true" class="mb-5"
       >Create Product</v-btn
-    >
+    >  
 
     <ProductsCreatedialog
       v-model="dialog"

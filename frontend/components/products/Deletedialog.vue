@@ -5,7 +5,7 @@
     :value="modelValue"
     max-width="400px"
     @update:modelValue="onDialogClose"
-  >
+  >    
     <v-card>
       <v-card-title>Confirm Delete</v-card-title>
       <v-card-text>Are you sure you want to delete this product?</v-card-text>

@@ -1,6 +1,6 @@
 <template>
   <!-- Speed Dial component -->
-  <v-speed-dial
+  <v-speed-dial   
     v-model="fab"
     location="bottom right"
     transition="fade-transition"

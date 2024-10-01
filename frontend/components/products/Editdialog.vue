@@ -70,7 +70,7 @@ watch(
   (newVal) => {
     if (newVal) {
         fromData.value = { ...newVal }; // Copy the product data
-    }
+    } 
   },
   { immediate: true }
 );

@@ -2,11 +2,11 @@
   <v-card class="mx-auto" max-width="344">
     <v-img height="200px" :src="product.Image" cover> </v-img>
 
-    <v-card-title>{{ product.Name }}</v-card-title>
-    <v-card-title>{{ product.Amount }}</v-card-title>
+    <v-card-title class="text-h5 font-weight-bold">{{ product.Name }}</v-card-title>
+    <v-card-title class="text-h7 font-weight-medium">{{ product.Amount }} Bath</v-card-title>
 
     <v-card-actions>
-      <v-btn color="orange-lighten-2" text>Explore</v-btn>
+      <v-btn color="primary">View Product</v-btn>
       <v-spacer></v-spacer>
       <v-btn
         :icon="show ? 'mdi-chevron-up' : 'mdi-chevron-down'"

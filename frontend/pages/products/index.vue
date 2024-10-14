@@ -1,9 +1,11 @@
 <template>
   <v-container>
-    <v-card-title class="font-weight-bold">Product</v-card-title>
-    <v-btn color="primary" @click="dialog = true" class="mb-5"
-      rounded>Create Product</v-btn
-    >
+    <div class="d-flex justify-space-between">
+      <v-card-title class="text-h5 font-weight-bold">Product</v-card-title>
+      <v-btn color="black" @click="dialog = true" class="mb-5 mt-2"
+        >Create Product</v-btn
+      >
+    </div>
 
     <ProductsCreatedialog
       v-model="dialog"
@@ -18,16 +20,18 @@
         md="4"
       >
         <v-card class="pa-5" elevation="0">
-          <div class="mb-6 justify-center">
+          <div class="mb-5">
             <ProductsListMenu
-              @edit="openEditDialog(product)" 
+              @edit="openEditDialog(product)"
               @delete="openDeleteDialog(product)"
             />
           </div>
           <ProductsCard :product="product" />
         </v-card>
       </v-col>
+      
     </v-row>
+    
     <ProductsEditdialog
       v-model="editDialog"
       :product="selectedProduct"
@@ -39,9 +43,16 @@
       @update:modelValue="deleteDialog = $event"
       @confirmDelete="deleteProduct"
     />
+    
+    <Alert
+        v-if="alertMessage"
+        :message="alertMessage"
+        :type="alertType"
+        :duration="5000"
+      />
   </v-container>
 </template>
-<!-- ้่เิ่า้เ่า้เ -->
+
 <script setup lang="ts">
 const products = ref([]);
 const dialog = ref(false);
@@ -49,13 +60,9 @@ const editDialog = ref(false);
 const deleteDialog = ref(false);
 const selectedProduct = ref(null);
 
-const fromData = ref({
-  Name: "",
-  Amount: "",
-  description: "",
-  Image: "",
-  // Add other fields if necessary
-});
+const alertMessage = ref<string>(''); // Define type for alertMessage
+const alertType = ref<'success' | 'fail'>('success'); // Define type for alertType
+
 
 // Fetch products from the API
 const fetchProducts = async () => {
@@ -80,97 +87,104 @@ const handleProductCreated = async (newProduct) => {
 
     const result = await response.json();
     products.value.push(result.data);
+    alertMessage.value = 'Product created successfully!';
+    alertType.value = 'success';
     console.log("Product created successfully:", result);
   } catch (error) {
     console.error("Error creating product:", error);
   }
 };
-// const updateProduct = async (updatedProduct) => {
-//   if (!updatedProduct || !updatedProduct.id) {
-//     console.error("Invalid product data for update:", updatedProduct);
-//     return; // Prevent the function from proceeding if product data is invalid
-//   }
+interface ProductUpdateData {
+  Name: string;
+  Amount: number;
+  description?: string;
+  Image?: string;
+}
 
-//   try {
-//     const response = await fetch(`http://localhost:1337/api/products/${updatedProduct.id}`, {
-//       method: "PUT",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ data: updatedProduct }),
-//     });
+const updateProduct = async (updatedProduct: ProductUpdateData) => {
+  console.log("Updating product:", selectedProduct.value);  // Debug log to check product
+  if (!selectedProduct.value) return;
 
-//     const result = await response.json();
+  const productId = selectedProduct.value.documentId;  // Assuming documentId is correct
 
-//     // Check if the response is valid
-//     if (!result.data) {
-//       console.error("Update failed: No data returned from server");
-//       return;
-//     }
-
-//     // Update the product in the products array
-//     const index = products.value.findIndex(product => product.id === updatedProduct.id);
-//     if (index !== -1) {
-//       products.value[index] = result.data; // Update the product in the array
-//     } else {
-//       console.error("Product not found in local state:", updatedProduct.id);
-//     }
-
-//     console.log("Product updated successfully:", result);
-//     editDialog.value = false; // Close the edit dialog
-//   } catch (error) {
-//     console.error("Error updating product:", error);
-//   }
-// };
-
-const updateProduct = async (updatedProduct) => {
-  if (!updatedProduct || !updatedProduct.id) {
-    console.error("Invalid product data for update:", updatedProduct);
-    return; // Prevent the function from proceeding if product data is invalid
+  if (!productId) {
+    console.error("Product ID is missing.");
+    return;
   }
 
   try {
-    const response = await fetch(`http://localhost:1337/api/products/${updatedProduct.id}`, {
+    const response = await fetch(`http://localhost:1337/api/products/${productId}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(updatedProduct), // Send the updatedProduct directly
+      body: JSON.stringify({
+        data: {
+          Name: updatedProduct.Name,         // Include updated fields
+          Amount: updatedProduct.Amount,
+          description: updatedProduct.description,
+          Image: updatedProduct.Image,
+        },
+      }),
     });
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error from server:", errorData);
+      throw new Error(`Failed to update product. Error: ${response.statusText}`);
+    }
+
     const result = await response.json();
-
-    // Check if the response is valid
-    if (!result.data) {
-      console.error("Update failed: No data returned from server");
-      return;
-    }
-
-    // Update the product in the products array
-    const index = products.value.findIndex(product => product.id === updatedProduct.id);
-    if (index !== -1) {
-      products.value[index] = result.data; // Update the product in the array
-    } else {
-      console.error("Product not found in local state:", updatedProduct.id);
-    }
-
+    alertMessage.value = 'Product updated successfully!';
+    alertType.value = 'success';
     console.log("Product updated successfully:", result);
-    editDialog.value = false; // Close the edit dialog
+    fetchProducts()
   } catch (error) {
     console.error("Error updating product:", error);
+  }
+};
+const deleteProduct = async () => {
+  console.log("Deleting product:", selectedProduct.value);
+  if (!selectedProduct.value) return;
+
+  const productId = selectedProduct.value.documentId;
+
+  if (!productId) {
+    console.error("Product ID is missing.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`http://localhost:1337/api/products/${productId}`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Error from server:", errorData);
+      throw new Error(`Failed to delete product. Error: ${response.statusText}`);
+    }
+
+    console.log("Product deleted successfully.");
+    // Remove product from local list after deletion
+    products.value = products.value.filter((product) => product.documentId !== productId);
+  } catch (error) {
+    console.error("Error deleting product:", error);
   }
 };
 
 const openEditDialog = (product) => {
   selectedProduct.value = product;
   editDialog.value = true;
+  console.log(product.documentId)
 };
 const openDeleteDialog = (product) => {
   selectedProduct.value = product;
   deleteDialog.value = true;
 };
-
-
 
 onMounted(() => {
   fetchProducts();
